@@ -43,6 +43,7 @@ const App: React.FC = () => {
         setIsLoggedIn(false);
         setCurrentPage(0);
         setCities([]);
+        setSearchQuery('');
     };
 
     const getCities = async (login: string, password: string, page: number, name?: string) => {
@@ -138,6 +139,13 @@ const App: React.FC = () => {
                             <Grid item>
                                 <Button onClick={goToNextPage} disabled={currentPage === totalPages - 1}>
                                     Next Page
+                                </Button>
+                            </Grid>
+                        </Grid>
+                        <Grid container justifyContent="center" mt={2}>
+                            <Grid item>
+                                <Button onClick={handleLogout}>
+                                    Logout
                                 </Button>
                             </Grid>
                         </Grid>
