@@ -2,8 +2,7 @@ import City from "./City";
 
 interface Page {
     content: City[];
-    totalPages: number;
-    totalElements: number;
+    totalPages: number
 }
 
 export default Page;
