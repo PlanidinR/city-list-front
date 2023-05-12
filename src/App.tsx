@@ -93,8 +93,8 @@ const App: React.FC = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <div>
-                <h1>Cities</h1>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h1 style={{ marginBottom: '20px' }}>Cities</h1>
                 {isLoggedIn ? (
                     <div>
                         <Grid container alignItems="center" justifyContent="center" mb={2}>
