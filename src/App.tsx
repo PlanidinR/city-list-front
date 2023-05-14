@@ -1,7 +1,21 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import {Grid, TextField, Button, Table, TableHead, TableBody, TableRow, IconButton, TableCell, Box, Typography} from '@mui/material';
+import {
+    Grid,
+    TextField,
+    Button,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    IconButton,
+    TableCell,
+    Box,
+    Typography,
+    Snackbar
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { Alert } from '@mui/material';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import City from './City';
 import Page from "./Page";
@@ -19,6 +33,9 @@ const App: React.FC = () => {
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loginError, setLoginError] = useState('');
+
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -42,6 +59,8 @@ const App: React.FC = () => {
             }
         } catch (error) {
             console.error('Error logging in:', error);
+            setAlertMessage('Invalid login or password credentials');
+            setOpenAlert(true);
         }
     };
 
@@ -53,6 +72,10 @@ const App: React.FC = () => {
         setCurrentPage(0);
         setCities([]);
         setSearchQuery('');
+    };
+
+    const handleAlertClose = () => {
+        setOpenAlert(false);
     };
 
     const getCities = async (login: string, password: string, page: number, name?: string) => {
@@ -78,6 +101,8 @@ const App: React.FC = () => {
 
         } catch (error) {
             console.error('Error fetching cities:', error);
+            setAlertMessage('Error fetching cities');
+            setOpenAlert(true);
         }
     };
 
@@ -99,10 +124,13 @@ const App: React.FC = () => {
                 },
             });
             if (response.status === 200) {
+                setEditCity(updatedCity);
                 getCities(login, password, page, searchQuery);
             }
         } catch (error) {
             console.error('Error updating city:', error);
+            setAlertMessage('Error updating city: Invalid name or url');
+            setOpenAlert(true);
         }
     };
 
@@ -239,8 +267,13 @@ const App: React.FC = () => {
                         </Grid>
                     </div>
                 ) : (
-                    <LoginForm handleLogin={handleLogin} loginError={loginError}/>
+                    <LoginForm handleLogin={handleLogin} handleAlertClose={handleAlertClose} openAlert ={openAlert} alertMessage={alertMessage}/>
                 )}
+                <Snackbar open={openAlert} autoHideDuration={5000} onClose={handleAlertClose}>
+                    <Alert severity="error" onClose={handleAlertClose}>
+                        {alertMessage}
+                    </Alert>
+                </Snackbar>
             </div>
         </ThemeProvider>
     );
@@ -248,12 +281,16 @@ const App: React.FC = () => {
 
 type LoginFormProps = {
     handleLogin: (login: string, password: string) => void;
-    loginError: string;
+    handleAlertClose:() => void;
+    openAlert: boolean;
+    alertMessage:string;
+
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({handleLogin, loginError}) => {
+const LoginForm: React.FC<LoginFormProps> = ({handleLogin, handleAlertClose, openAlert, alertMessage }) => {
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
+
     const theme = createTheme();
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -293,12 +330,12 @@ const LoginForm: React.FC<LoginFormProps> = ({handleLogin, loginError}) => {
                             Login
                         </Button>
                     </Grid>
-                    {loginError && (
-                        <Grid item xs={12}>
-                            <div>{loginError}</div>
-                        </Grid>
-                    )}
                 </Grid>
+                <Snackbar open={openAlert} autoHideDuration={5000} onClose={handleAlertClose}>
+                    <Alert severity="error" onClose={handleAlertClose}>
+                        {alertMessage}
+                    </Alert>
+                </Snackbar>
             </form>
         </ThemeProvider>
     );
