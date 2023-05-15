@@ -15,11 +15,11 @@ import {
     Snackbar
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert } from '@mui/material';
+import {Alert} from '@mui/material';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
-import City from './City';
-import Page from "./Page";
-import UserInfo from "./UserInfo";
+import City from './types/City';
+import Page from "./types/Page";
+import UserInfo from "./types/UserInfo";
 
 const App: React.FC = () => {
     const theme = createTheme();
@@ -32,7 +32,6 @@ const App: React.FC = () => {
     const [editCity, setEditCity] = useState<City>();
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [loginError, setLoginError] = useState('');
 
     const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
@@ -54,9 +53,8 @@ const App: React.FC = () => {
                 setIsLoggedIn(true);
                 setRole(response.data.role);
                 getCities(login, password, currentPage);
-            } else {
-                setLoginError('Login failed');
             }
+
         } catch (error) {
             console.error('Error logging in:', error);
             setAlertMessage('Invalid login or password credentials');
@@ -135,8 +133,13 @@ const App: React.FC = () => {
     };
 
     const EditForm = ({city, onSave, login, password, page,}:
-                          { city: City; onSave: (login: string, password: string, page: number, updatedCity: City) => void;
-                              login: string; password: string; page: number; }) => {
+                          {
+                              city: City;
+                              onSave: (login: string, password: string, page: number, updatedCity: City) => void;
+                              login: string;
+                              password: string;
+                              page: number;
+                          }) => {
         const [name, setName] = useState(city.name);
         const [url, setURL] = useState(city.url);
 
@@ -162,11 +165,11 @@ const App: React.FC = () => {
                 <Typography variant="h5">Edit City</Typography>
                 <Box marginBottom={2}>
                     <Typography>Name:</Typography>
-                    <TextField value={name} onChange={handleNameChange} />
+                    <TextField value={name} onChange={handleNameChange}/>
                 </Box>
                 <Box marginBottom={2}>
                     <Typography>URL:</Typography>
-                    <TextField value={url} onChange={handleURLChange} />
+                    <TextField value={url} onChange={handleURLChange}/>
                 </Box>
                 <Button variant="contained" onClick={handleSave}>
                     Save
@@ -189,10 +192,40 @@ const App: React.FC = () => {
         }
     };
 
+    const createCityRow = (city: City) => {
+        return (
+            <TableRow key={city.id}>
+                <TableCell>{city.name}</TableCell>
+                <TableCell>
+                    <img src={city.url} alt={city.name}/>
+                </TableCell>
+                {role === 'ROLE_ALLOW_EDIT' && (
+                    <TableCell sx={{display: 'flex', alignItems: 'center'}}>
+                        {editCity && editCity.id === city.id ? (
+                            <EditForm
+                                city={editCity}
+                                onSave={(login, password, currentPage, updatedCity) =>
+                                    handleSave(login, password, currentPage, updatedCity)
+                                }
+                                login={login}
+                                password={password}
+                                page={currentPage}
+                            />
+                        ) : (
+                            <IconButton sx={{marginRight: '8px'}} onClick={() => handleEdit(city)}>
+                                <EditIcon/>
+                            </IconButton>
+                        )}
+                    </TableCell>
+                )}
+            </TableRow>
+        );
+    };
+
     return (
         <ThemeProvider theme={theme}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h1 style={{ marginBottom: '20px' }}>Cities</h1>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                <h1 style={{marginBottom: '20px'}}>Cities</h1>
                 {isLoggedIn ? (
                     <div>
                         <Grid container alignItems="center" justifyContent="center" mb={2}>
@@ -219,31 +252,7 @@ const App: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {cities.map((city) => (
-                                    <TableRow key={city.id}>
-                                        <TableCell>{city.name}</TableCell>
-                                        <TableCell>
-                                            <img src={city.url} alt={city.name}/>
-                                        </TableCell>
-                                        {role === 'ROLE_ALLOW_EDIT' && (
-                                            <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-                                                {editCity && editCity.id === city.id ? (
-                                                    <EditForm
-                                                        city={editCity}
-                                                        onSave={(login, password, currentPage, updatedCity) => handleSave(login, password, currentPage, updatedCity)}
-                                                        login={login}
-                                                        password={password}
-                                                        page={currentPage}
-                                                    />
-                                                ) : (
-                                                    <IconButton sx={{ marginRight: '8px' }} onClick={() => handleEdit(city)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                )}
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                ))}
+                                {cities.map((city) => createCityRow(city))}
                             </TableBody>
                         </Table>
                         <Grid container justifyContent="center" mt={2}>
@@ -267,7 +276,8 @@ const App: React.FC = () => {
                         </Grid>
                     </div>
                 ) : (
-                    <LoginForm handleLogin={handleLogin} handleAlertClose={handleAlertClose} openAlert ={openAlert} alertMessage={alertMessage}/>
+                    <LoginForm handleLogin={handleLogin} handleAlertClose={handleAlertClose} openAlert={openAlert}
+                               alertMessage={alertMessage}/>
                 )}
                 <Snackbar open={openAlert} autoHideDuration={5000} onClose={handleAlertClose}>
                     <Alert severity="error" onClose={handleAlertClose}>
@@ -281,13 +291,13 @@ const App: React.FC = () => {
 
 type LoginFormProps = {
     handleLogin: (login: string, password: string) => void;
-    handleAlertClose:() => void;
+    handleAlertClose: () => void;
     openAlert: boolean;
-    alertMessage:string;
+    alertMessage: string;
 
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({handleLogin, handleAlertClose, openAlert, alertMessage }) => {
+const LoginForm: React.FC<LoginFormProps> = ({handleLogin, handleAlertClose, openAlert, alertMessage}) => {
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
 
